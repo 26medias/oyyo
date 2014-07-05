@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.appgyver.helloOyyo" version="3.1.8" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+	<name>Hello Oyyo</name>
+	<description>
+		A stupid Yo-like app.
+	</description>
+	<author email="contact@oyyo.me" href="http://www.oyyo.me/">
+		Oyyo Team
+	</author>
+	<access origin="*" />
+
+	<feature name="http://appgyver.com/steroids/addons/facebook">
+		<param name="appId" value="697389570334100" />
+	</feature>
+
+	<feature name="http://appgyver.com/steroids/addons/geolocation">
+		<param name="continuousUpdates" value="true" />
+	</feature>
+</widget>

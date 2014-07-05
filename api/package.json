@@ -1,0 +1,36 @@
+{
+	"name": 		"survey",
+	"description": 	"Survey SAAS",
+	"version":		"1.0.0",
+	"dependencies": {
+		"mongodb":				"latest",
+		"underscore":			"latest",
+		"express":				"latest",
+		"request":				"latest",
+		"gamify":				"latest",
+		"passport":				"latest",
+		"toolset":				"latest",
+		"mime":					"latest",
+		"less":					"latest",
+		"tiny-facebook-wrapper":"latest",
+		"passport-remember-me":	"latest",
+		"passport-local":		"latest",
+		"passport-google":		"latest",
+		"passport-twitter":		"latest",
+		"passport-facebook":	"latest",
+		"passport-linkedin":	"latest",
+		"passport-youtube":		"latest",
+		"serve-favicon":		"latest",
+		"morgan":				"latest",
+		"cookie-parser":		"latest",
+		"body-parser":			"latest",
+		"method-override":		"latest",
+		"express-session":		"latest",
+		"errorhandler":			"latest",
+		"express-flash":		"latest",
+		"express-sessions":		"latest",
+		"serve-static":			"latest",
+		"pkgcloud":				"latest"
+	}
+}
+

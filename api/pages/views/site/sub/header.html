@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="ie lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="ie lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="ie lt-ie9"> <![endif]-->
+<!--[if gt IE 8]> <html class=""> <![endif]-->
+<!--[if !IE]><!--><html class=""><!-- <![endif]-->
+	<head>
+		<title>{text:title}</title>
+
+		<!-- Meta -->
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+		
+		<base href="/">
+		
+		<script type="text/javascript">
+			var userData = {json:user};
+			window.userData = userData;
+			console.log("userData",userData);
+		</script>
+
+		{dependency:dependencies}
+		
+		<script type="text/javascript" src="/static/engine/project.js"></script>
+		<script type="text/javascript" src="/static/scripts/front.js"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.0/less.min.js"></script>
+		
+	</head>
+	<body ng-app="main">

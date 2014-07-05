@@ -1,0 +1,11 @@
+{
+	"name": "theme",
+	"version": "1.0.0",
+	"dependencies":	{
+		"jquery":		"latest",
+		"angular":		"latest",
+		"bootstrap":	"latest",
+		"underscore":	"latest"
+	},
+	"main": ["theme.css"]
+}

@@ -1,0 +1,553 @@
+{include:site/sub/header.html}
+{include:site/sub/menu.html}
+
+<style type="text/css">
+a {
+	cursor:	pointer;
+}	
+</style>
+
+<div id="content" ng-controller="pageCtrl">
+	<div class="row">
+		
+		<div class="col-md-4">
+			
+			<div ng-if="display">
+				<ul class="nav nav-pills nav-stacked" style="margin-bottom:10px;">
+					<li ng-if="display=='site'" ng-click="setDisplay(false)">
+						<a style="cursor:pointer;">
+							&laquo; Back to the list of sites
+						</a>
+					</li>
+					<li ng-if="display=='page'" ng-click="setDisplay('site')">
+						<a style="cursor:pointer;">
+							&laquo; Back to the list of pages
+						</a>
+					</li>
+				</ul>
+			</div>
+			
+			<!-- Sites -->
+			<div ng-if="!display">
+				
+				<!-- There are sites -->
+				<div ng-if="sites.list.length > 0" class="panel panel-default">
+					<div class="panel-heading">Select a site</div>
+					<ul class="nav nav-pills nav-stacked" style="margin-bottom:20px;">
+						<li ng-repeat="site in sites.list" ng-class="{active:sites.selected.id==site.id}" ng-click="sites.select(site)">
+							<a style="cursor:pointer;">
+								<span class="badge pull-right">
+									{{site.pages.length}} pages
+								</span>
+								{{site.name}}
+							</a>
+						</li>
+					</ul>
+				</div>
+				
+				<div class="panel panel-default">
+					<div ng-if="sites.list.length == 0" class="well">
+						You don't have any site. Create your first site now!
+					</div>
+					<div class="panel-body">
+						<center>
+							<div ng-click="sites.create()" class="btn btn-primary btn-lg">
+								<span class="glyphicon glyphicon-plus"></span> Create a new site
+							</div>
+						</center>
+					</div>
+				</div>
+				
+			</div>
+			
+			
+			<!-- Pages -->
+			<div ng-if="display=='site'">
+				<div ng-if="pages.list.length > 0" class="panel panel-default">
+					<div class="panel-heading">Select a page</div>
+					<ul class="nav nav-pills nav-stacked" style="margin-bottom:20px;">
+						<li ng-repeat="page in pages.list" ng-class="{active:pages.selected.id==page.id}" ng-click="pages.select(page)">
+							<a style="cursor:pointer;">
+								<span class="badge pull-right">
+									{{page.components.length}} components
+								</span>
+								{{page.title}}
+							</a>
+						</li>
+					</ul>
+				</div>
+				
+				<div class="panel panel-default">
+					<div class="well">
+						You don't have any pages yet! Create your first page!
+					</div>
+					<div class="panel-body">
+						<center>
+							<div ng-click="pages.create()" class="btn btn-primary btn-lg">
+								<span class="glyphicon glyphicon-file"></span> Create a new page
+							</div>
+						</center>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Components -->
+			<div ng-if="display=='page'">
+				<div ng-if="pages.list.length > 0" class="panel panel-default">
+					<div class="panel-heading">Click to add the component to your page</div>
+					<ul class="nav nav-pills nav-stacked" style="margin-bottom:20px;">
+						<li ng-repeat="component in components.list" ng-if="component.type=='component'" ng-class="{active:components.selected.id==component.id}" ng-click="pages.addComponent(component)">
+							<a style="cursor:pointer;">
+								<span class="badge pull-right">
+									{{component.latest.version.major}}.{{component.latest.version.minor}}.{{component.latest.version.build}}
+								</span>
+								{{component.displayName}}
+							</a>
+						</li>
+					</ul>
+				</div>
+				
+				<!-- Page edit -->
+				<div ng-if="display=='page'">
+					<div class="panel panel-default">
+						<div class="panel-heading">Page Settings</div>
+						<div class="panel-body">
+							<div id="form" role="form">
+								<div class="form-group">
+									<label>ID</label>
+									<input ng-model="pages.selected.id" readonly type="text" class="form-control">
+								</div>
+								<div class="form-group">
+									<label>Title</label>
+									<input ng-model="pages.selected.title" type="text" class="form-control">
+								</div>
+								<div class="form-group">
+									<label>Path</label>
+									<input ng-model="pages.selected.path" type="text" class="form-control">
+								</div>
+							</div>
+						</div>
+						<div class="panel-footer">
+							<div class="btn btn-primary" ng-click="pages.preview()">Preview that page</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="col-md-8">
+			
+			<!-- Welcome screen -->
+			<div ng-if="!display">
+				<div class="jumbotron">
+					<h1>Hello, {{user.firstname}}!</h1>
+					<div ng-if="sites.list.length > 0">
+						<p>Select a site on the left side menu.</p>
+					</div>
+					<div ng-if="sites.list.length == 0">
+						<p>
+							You haven't created any site yet.
+						</p>
+						<p>
+							Create your first site now!
+						</p>
+					</div>
+					
+					<p>
+						<div class="btn btn-primary btn-lg" role="button" ng-click="sites.create()">
+							<span class="glyphicon glyphicon-plus"></span> Create a new site
+						</div>
+					</p>
+				</div>
+			</div>
+			
+			<!-- Site edit -->
+			<div ng-if="display=='site'">
+				<div class="panel panel-default">
+					<div class="panel-heading">Site Settings</div>
+					<div class="panel-body">
+						<div id="form" role="form">
+							<div class="form-group">
+								<label>ID</label>
+								<input ng-model="sites.selected.id" readonly type="text" class="form-control">
+							</div>
+							<div class="form-group">
+								<label>Name</label>
+								<input ng-model="sites.selected.name" type="text" class="form-control">
+							</div>
+							<div class="form-group">
+								<label>Alias</label>
+								<input ng-model="sites.selected.alias" type="text" class="form-control">
+							</div>
+							<div class="form-group">
+								<label>Layout</label>
+								<ul class="nav nav-pills">
+									<li ng-class="{active:sites.selected.layout=='regular'}">
+										<a ng-click="sites.selected.layout='regular'">
+											Regular
+										</a>
+									</li>
+									<li ng-class="{active:sites.selected.layout=='onepage'}">
+										<a ng-click="sites.selected.layout='onepage'">
+											One Page
+										</a>
+									</li>
+								</ul>
+							</div>
+							<div class="form-group">
+								<label>Theme</label>
+								
+								<ul class="nav nav-pills nav-stacked">
+									<li ng-class="{active:component.id==sites.selected.theme.id}" ng-repeat="component in components.list" ng-if="component.type=='theme' && ((sites.selected.layout=='regular' && !component.onepage) || (sites.selected.layout!='regular' && component.onepage))">
+										<a ng-click="sites.selectTheme(component)">
+											<span class="badge pull-right">
+												{{component.latest.version.major}}.{{component.latest.version.minor}}.{{component.latest.version.build}}
+											</span>
+											{{component.displayName}}
+										</a>
+									</li>
+								</ul>
+							</div>
+							
+						</div>
+					</div>
+					<div class="panel-footer">
+						<div class="btn btn-danger" ng-click="sites.deleteSelected()">Delete this site</div>
+					</div>
+				</div>
+			</div>
+			
+			
+			<!-- Page edit -->
+			<!-- Moved to the left side -->
+			<div ng-if="display=='page'">
+				<div class="panel panel-default">
+					<div class="panel-heading">{{pages.selected.title}}</div>
+					<table class="table table-hover">
+						<tbody>
+							<tr>
+								<td style="text-align:center" ng-if="pages.selected.components.length == 0">
+									Click on a component on the left side to add it to your page.
+								</td>
+							</tr>
+							<tr ng-repeat="component in pages.selected.components">
+								<td ng-click="pages.removeComponent($index)">
+									{{component.name}}
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+</div>
+
+<script type="text/javascript">
+
+	window.meanEngine.get('app').controller('pageCtrl', function ($scope) {
+		
+		$scope.user = window.userData;
+		
+		$scope.display = false;
+		
+		
+		// Debounce function, used for auto-save, because clicking a button is just annoying me...
+		var debounce = function(obj, prop, callback) {
+			var timer;
+			var delay	= 1000;
+			var resetTimer = function(val) {
+				clearInterval(timer);
+				timer = setTimeout(function() {
+					callback(val);
+				}, delay);
+			}
+			obj.$watch(prop, function(newValue, oldValue) {
+				resetTimer(newValue);
+			});
+		}
+		
+		
+		$scope.setDisplay = function(value) {
+			$scope.safeApply(function() {
+				$scope.display = value;
+				switch (value) {
+					case "site":
+						// unselect the page
+						$scope.pages.selected = {};
+					break;
+					case false:
+						// unselect the page
+						$scope.pages.selected = {};
+						// unselect the site
+						$scope.sites.selected = {};
+					break;
+				}
+			});
+		}
+		
+		
+		
+		$scope.sites = {
+			list:		[],
+			selected:	{},
+			loading:	false,
+			refresh:	function() {
+				$scope.sites.loading 	= true;
+				window.meanEngine.service("api").apicall({
+					method:		'sites.list',
+					params:		{
+						apikey:		window.userData.apikey
+					},
+					callback:	function(response) {
+						console.log("sites",response);
+						$scope.safeApply(function() {
+							$scope.sites.list 		= response;
+							$scope.sites.loading 	= false;
+							
+							if ($scope.sites.selected) {
+								_.each($scope.sites.list, function(item) {
+									if (item.id == $scope.sites.selected.id) {
+										$scope.sites.select(item);
+									}
+								});
+							}
+						});
+					}
+				});
+			},
+			create:	function() {
+				$scope.sites.loading 	= true;
+				window.meanEngine.service("api").apicall({
+					method:		'sites.create',
+					params:		{
+						apikey:		window.userData.apikey
+					},
+					callback:	function(response) {
+						console.log("sites create",response);
+						$scope.sites.refresh();
+					}
+				});
+			},
+			deleteSelected:	function() {
+				
+				var id = $scope.sites.selected.id+'';
+				
+				var c = 0;
+				_.each($scope.sites.list, function(item) {
+					if (item.id == $scope.sites.selected.id) {
+						$scope.sites.list.splice(c, 1);
+					}
+					c++;
+				});
+				
+				$scope.safeApply(function() {
+					$scope.sites.selected = {};
+					$scope.setDisplay(false);
+				});
+				
+				$scope.sites.loading 	= true;
+				window.meanEngine.service("api").apicall({
+					method:		'sites.remove',
+					params:		{
+						apikey:		window.userData.apikey,
+						id:			id
+					},
+					callback:	function(response) {
+						console.log("sites remove",response);
+						$scope.sites.refresh();
+					}
+				});
+			},
+			select:		function(component) {
+				$scope.safeApply(function() {
+					$scope.sites.selected 	= component;
+					$scope.display 			= 'site';
+					$scope.pages.list 		= component.pages;
+				});
+			},
+			saveSelected:	function(attr) {
+				
+				var data 	= {};
+				data[attr]	= $scope.sites.selected[attr];
+				if (!data[attr]) {
+					return false;
+				}
+				
+				window.meanEngine.service("api").apicall({
+					method:		'sites.save',
+					params:		{
+						apikey:		window.userData.apikey,
+						id:			$scope.sites.selected.id,
+						data:		data
+					},
+					callback:	function(response) {
+						console.log("save response",response);
+					}
+				});
+			},
+			selectTheme:	function(component) {
+				$scope.sites.selected.theme = {
+					name:			component.name,
+					version:		[component.latest.version.major,component.latest.version.minor,component.latest.version.build].join('.'),
+					versionSafe:	[component.latest.version.major,component.latest.version.minor,component.latest.version.build].join('_'),
+					id:				component.id
+				};
+			}
+		};
+		
+		
+		$scope.pages = {
+			list:		[],
+			selected:	{},
+			loading:	false,
+			select:		function(page) {
+				$scope.safeApply(function() {
+					$scope.pages.selected 	= page;
+					$scope.display 			= 'page';
+				});
+			},
+			create:	function() {
+				$scope.sites.loading 	= true;
+				window.meanEngine.service("api").apicall({
+					method:		'sites.createPage',
+					params:		{
+						apikey:		window.userData.apikey,
+						site:		$scope.sites.selected.id
+					},
+					callback:	function(response) {
+						console.log("page create",response);
+						$scope.sites.refresh();
+					}
+				});
+			},
+			saveSelected:	function(attr) {
+				
+				var data 	= {};
+				data[attr]	= $scope.pages.selected[attr];
+				if (!data[attr]) {
+					return false;
+				}
+				
+				window.meanEngine.service("api").apicall({
+					method:		'sites.savePage',
+					params:		{
+						apikey:		window.userData.apikey,
+						id:			$scope.pages.selected.id,
+						data:		data
+					},
+					callback:	function(response) {
+						console.log("save response (page)",response);
+					}
+				});
+			},
+			addComponent:	function(component) {
+				
+				// Push the component to the list
+				$scope.pages.selected.components.push({
+					id:				component.id,
+					name:			component.name,
+					version:		[component.latest.version.major,component.latest.version.minor,component.latest.version.build].join('.'),
+					versionSafe:	[component.latest.version.major,component.latest.version.minor,component.latest.version.build].join('_'),
+					data:			{}
+				});
+				
+				// Save
+				window.meanEngine.service("api").apicall({
+					method:		'sites.updateComponents',
+					params:		{
+						apikey:		window.userData.apikey,
+						id:			$scope.pages.selected.id,
+						components:	$scope.pages.selected.components
+					},
+					callback:	function(response) {
+						console.log("updateComponents",response);
+					}
+				});
+			},
+			removeComponent:	function(index) {
+				
+				// Push the component to the list
+				$scope.pages.selected.components.splice(index, 1);
+				
+				// Save
+				window.meanEngine.service("api").apicall({
+					method:		'sites.updateComponents',
+					params:		{
+						apikey:		window.userData.apikey,
+						id:			$scope.pages.selected.id,
+						components:	$scope.pages.selected.components
+					},
+					callback:	function(response) {
+						console.log("updateComponents",response);
+					}
+				});
+			},
+			preview:	function() {
+				
+			}
+		};
+		
+		$scope.components = {
+			list:		[],
+			loading:	false,
+			refresh:	function() {
+				window.meanEngine.service("api").apicall({
+					method:		'components.list',
+					params:		{},
+					callback:	function(response) {
+						console.log("components",response);
+						$scope.safeApply(function() {
+							$scope.components.list 		= response;
+							$scope.components.loading 	= false;
+						});
+					}
+				});
+			}
+		};
+		
+		
+		
+		
+		// Debounce and autosave
+		// Auto-save the site name changes
+		debounce($scope, 'sites.selected.name', function(value) {
+			$scope.sites.saveSelected('name');
+		});
+		debounce($scope, 'sites.selected.alias', function(value) {
+			$scope.sites.saveSelected('alias');
+		});
+		// Auto-save the site theme changes
+		debounce($scope, 'sites.selected.theme', function(value) {
+			$scope.sites.saveSelected('theme');
+		});
+		// Auto-save the site layout changes
+		debounce($scope, 'sites.selected.layout', function(value) {
+			$scope.sites.saveSelected('layout');
+		});
+		// Auto-save the page title changes
+		debounce($scope, 'pages.selected.title', function(value) {
+			$scope.pages.saveSelected('title');
+		});
+		// Auto-save the page title changes
+		debounce($scope, 'pages.selected.path', function(value) {
+			$scope.pages.saveSelected('path');
+		});
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		// Load the data
+		$scope.components.refresh();
+		$scope.sites.refresh();
+		
+	});
+</script>
+
+{include:site/sub/footer.html}

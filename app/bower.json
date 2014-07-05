@@ -1,0 +1,20 @@
+{
+  "name": "oyyo",
+  "version": "0.0.1",
+  "authors": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "www/components",
+    "www/spec",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "steroids-js": "3.1.x",
+    "angular": "1.2.16",
+    "angular-touch": "1.2.16",
+    "restangular": "1.3.1",
+    "steroids-addons": "https://14797:GAWQEF9ATGND4RSTRVTLDEHJ8SKD297PPAEJKL4CA9KD77CW27HDWYS578NXNP42PTY4KWYMM8AQ@addons.appgyver.com/steroids-addons.js?version=3.1.1"
+  }
+}

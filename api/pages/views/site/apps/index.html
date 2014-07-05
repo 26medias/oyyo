@@ -1,0 +1,257 @@
+{include:site/sub/header.html}
+{include:site/sub/menu.html}
+
+<div id="content" ng-controller="pageCtrl">
+	<div ng-if="!components.loading" class="container">
+		<div class="row">
+			
+			<div class="col-md-4">
+				
+				<ul class="nav nav-pills">
+					<li ng-class="{active:components.displayType=='theme'}">
+						<a style="cursor:pointer;" ng-click="components.displayType='theme'">
+							<span class="badge pull-right">{{components.getCount('theme')}}</span>
+							Themes
+						</a>
+					</li>
+					<li ng-class="{active:components.displayType=='component'}">
+						<a style="cursor:pointer;" ng-click="components.displayType='component'">
+							<span class="badge pull-right">{{components.getCount('component')}}</span>
+							Components
+						</a>
+					</li>
+				</ul>
+				
+				<ul ng-if="components.list.length > 0" class="nav nav-pills nav-stacked" style="margin-bottom:20px;">
+					<li ng-repeat="component in components.list" ng-class="{active:components.selected.id==component.id}" ng-if="component.type == components.displayType">
+						<a ng-click="components.select(component)" style="cursor:pointer;">
+							<span class="badge pull-right">
+								{{component.latest.version.major}}.{{component.latest.version.minor}}.{{component.latest.version.build}}
+							</span>
+							{{component.displayName}}
+						</a>
+					</li>
+				</ul>
+				
+				<div class="panel panel-default">
+					<div class="panel-heading">API Credentials</div>
+					<div class="panel-body">
+						<div id="form" role="form">
+							<div class="form-group">
+								<label for="apikey">API Key</label>
+								<input name="apikey" ng-model="user.apikey" readonly type="text" class="form-control">
+							</div>
+							<div class="form-group">
+								<label for="apisecret">Secret</label>
+								<input name="apisecret" ng-model="user.secret" readonly type="text" class="form-control">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="col-md-8">
+				<div ng-if="components.selected.id">
+					
+					<div class="panel panel-default">
+						<div class="panel-heading">Component</div>
+						<table class="table table-hover">
+							<tbody>
+								<tr>
+									<td style="width:150px;">Name</td>
+									<td>{{components.selected.displayName}}</td>
+								</tr>
+								<tr>
+									<td>Internal Name</td>
+									<td>{{components.selected.name}}</td>
+								</tr>
+								<tr>
+									<td>ID</td>
+									<td>{{components.selected.id}}</td>
+								</tr>
+								<tr>
+									<td>Private Key</td>
+									<td>{{components.selected.key}}</td>
+								</tr>
+								<tr>
+									<td>Status</td>
+									<td>
+										<span class="label label-warning" ng-if="!components.selected.status.verified">Awaiting review</span>
+										<span class="label label-success" ng-if="components.selected.status.verified">Verified</span>
+									</td>
+								</tr>
+								<tr>
+									<td>Version</td>
+									<td>{{components.selected.latest.version.major}}.{{components.selected.latest.version.minor}}.{{components.selected.latest.version.build}}</td>
+								</tr>
+								<tr>
+									<td>CDN Path</td>
+									<td>
+										<input type="text" readonly class="form-control" ng-model="components.selected.latest.cdnPath" />
+									</td>
+								</tr>
+								<tr ng-if="components.selected.type=='theme'">
+									<td>One page template</td>
+									<td>{{components.selected.onepage?'Yes':'No'}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					
+					<div class="panel panel-default">
+						<div class="panel-heading">History</div>
+						<table class="table table-hover">
+							<thead>
+								<tr>
+									<th>Version</th>
+									<th>Date</th>
+									<th>User</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="entry in components.selected.history">
+									<td>{{entry.version}}</td>
+									<td>{{entry.date|date:'M/d/yy h:mm a'}}</td>
+									<td>{{entry.publishedBy}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					
+				</div>
+				<div ng-if="!components.selected.id">
+					<div class="jumbotron">
+						<h1>Hello, {{user.firstname}}!</h1>
+						<div ng-if="components.list.length > 0">
+							<p>Select a component on the left to see its details and history.</p>
+						</div>
+						<div ng-if="components.list.length == 0">
+							<p>
+								You haven't created and/or published any component yet.
+							</p>
+							<p>
+								Please install the pagevamp CLI. In a console, type:<br />
+								<code>npm install -g pagevamp</code>
+							</p>
+							<p>
+								Once installed, create your first component: <br />
+								<code>pagevamp create component</code>
+							</p>
+							<p>
+								On the first use, you will be asked for your API Key and Secret, which you will find on the left.
+							</p>
+							<p>
+								When you are ready to publish your component, type: <br />
+								<code>pagevamp publish</code>
+							</p>
+						</div>
+						
+						<p><a class="btn btn-primary btn-lg" role="button" href="https://www.npmjs.org/package/pagevamp" target="_blank">Check out the documentation</a></p>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+		
+	</div>
+	<div ng-if="components.loading" class="container">
+		<h1>Loading... Please wait...</h1>
+	</div>
+</div>
+
+<script type="text/javascript">
+
+	window.meanEngine.get('app').controller('pageCtrl', function ($scope) {
+		
+		$scope.user = window.userData;
+		
+		$scope.components = {
+			list:		[],
+			loading:	false,
+			selected:	{},
+			displayType:'theme',
+			refresh:	function(silent) {
+				if (!silent) {
+					$scope.components.loading 	= true;
+				}
+				window.meanEngine.service("api").apicall({
+					method:		'components.get',
+					params:		{
+						apikey:		window.userData.apikey
+					},
+					callback:	function(response) {
+						$scope.safeApply(function() {
+							$scope.components.list 		= response;
+							$scope.components.loading 	= false;
+							
+							if (response.length == 1 && !$scope.components.selected.id) {
+								// Select the only component created so far
+								$scope.components.select($scope.components.list[0]);
+							}
+							
+							if (silent && $scope.components.selected && $scope.components.selected.id) {
+								// Refresh the selected component
+								_.each($scope.components.list, function(item) {
+									if (item.id == $scope.components.selected.id) {
+										$scope.components.select(item);
+									}
+								});
+							}
+						});
+					}
+				});
+			},
+			create:		function() {
+				$scope.components.loading 	= true;
+				window.meanEngine.service("api").apicall({
+					method:		'components.create',
+					params:		{
+						apikey:		window.userData.apikey
+					},
+					callback:	function(response) {
+						console.log("response",response);
+						$scope.safeApply(function() {
+							$scope.components.list.push(response);
+							$scope.components.loading 	= false;
+							$scope.components.selected	= $scope.components.list[$scope.components.list.length-1];
+						});
+					}
+				});
+			},
+			remove:		function(component) {
+				$scope.components.loading 	= true;
+				window.meanEngine.service("api").apicall({
+					method:		'components.remove',
+					params:		{
+						apikey:		window.userData.apikey,
+						id:			component.uuid
+					},
+					callback:	function(response) {
+						// Refresh
+						$scope.components.refresh();
+					}
+				});
+			},
+			select:		function(component) {
+				$scope.safeApply(function() {
+					$scope.components.selected = component;
+				});
+			},
+			getCount:		function(type) {
+				return _.filter($scope.components.list, function(component) {
+					return component.type==type?1:0;
+				}).length;
+			}
+		};
+		
+		// Load the data
+		$scope.components.refresh();
+		
+		// Refresh from time too time
+		setInterval(function() {
+			$scope.components.refresh(true);	// Silent refresh
+		}, 10000);
+	});
+</script>
+
+{include:site/sub/footer.html}
