@@ -1,0 +1,17 @@
+<div ng-controller="IndexCtrl" class="content-padded">
+	
+	is it working or what??
+	<hr />
+	<div ng-if="loading">
+		Loading...
+	</div>
+	<div ng-if="!loading">
+		<ul class="list">
+			<li class="item item-icon-right" ng-click="message(friend, true)" ng-repeat="friend in friends">
+				<img src="{{friend.avatar}}" />
+				{{friend.name}}
+				<i class="icon ion-ios7-arrow-right"></i>
+			</li>
+		</ul>
+	</div>
+</div>

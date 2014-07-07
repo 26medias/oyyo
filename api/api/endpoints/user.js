@@ -1,5 +1,6 @@
 var _ 					= require('underscore');
 var qs 					= require("querystring");
+var social 				= require("social-api");
 
 // Users
 function api() {
@@ -10,9 +11,187 @@ api.prototype.init = function(Gamify, callback){
 	
 	this.Gamify = Gamify;
 	
+	var fb 			= new social.facebook();
+	fb.appid		= Gamify.options.appid;
+	fb.appsecret	= Gamify.options.appsecret;
+	
+	
+	
 	// Return the methods
 	var methods = {
 		
+		authenticate: {
+			require:		['fbuid','secret'],
+			auth:			false,
+			description:	"Find a user",
+			params:			{},
+			status:			'dev',
+			version:		1.0,
+			callback:		function(params, req, res, callback) {
+				scope.mongo.find({
+					collection:	'users',
+					query:	{
+						fbuid:		params.fbuid.toString(),
+						secret:		params.secret.toString()
+					}
+				}, function(response) {
+					if (response.length == 0) {
+						callback({
+							exists:	false
+						});
+					} else {
+						callback({
+							exists:	true,
+							user:	response[0]
+						});
+					}
+				});
+			}
+		},
+		updateOrCreate: {
+			require:		['fbuid','fbtoken'],
+			auth:			false,
+			description:	"Update or create a user account",
+			params:			{},
+			status:			'dev',
+			version:		1.0,
+			callback:		function(params, req, res, callback) {
+				
+				Gamify.log("params",params);
+				
+				// Make sure we have the data first
+				fb.graph({
+					path:	'/me',
+					data:	{},
+					auth:	params.fbtoken
+				}, function(fbdata) {
+					Gamify.log("fbdata",fbdata);
+					
+					if (fbdata && fbdata.id) {
+						
+						// List the friends
+						fb.graph({
+							path:	'/me/friends',
+							data:	{},
+							auth:	params.fbtoken
+						}, function(friends) {
+							
+							friends = friends.data;
+							
+							// List the friends in an array for fast search
+							var friendIds = _.pluck(friends, 'id');
+							
+							Gamify.log("friendIds", JSON.stringify(friendIds));
+							
+							// Push those people in the waiting list
+							// List the friends who are already users of the app
+							scope.mongo.distinct({
+								collection:	'users',
+								key:		'fbuid',
+								query:	{
+									fbuid:	{
+										$in:	friendIds
+									}
+								}
+							}, function(usersIds) {
+								Gamify.log("usersIds", JSON.stringify(usersIds));
+								
+								// Now push those users into the database
+								var inserts = [];
+								_.each(friends, function(friend) {
+									if (!_.contains(usersIds, friend.id)) {
+										//Gamify.log("friend", friend);
+										inserts.push({
+											fbuid:			friend.id,
+											data:			{
+												name:	friend.name
+											},
+											avatar:			"http://graph.facebook.com/"+friend.id+"/picture?redirect=true&width=140&height=140",
+											secret:			scope.Gamify.crypto.md5(scope.Gamify.uuid.v4()),
+											registered_on:	new Date(),
+											updated_on:		new Date(),
+											fbfriends:		[],
+											origin:			'invite',
+											importedBy:		fbdata.id
+										});
+									}
+								});
+								
+								Gamify.log("To push:", inserts.length);
+								
+								scope.mongo.insert({
+									collection:		'users',
+									data:			inserts
+								}, function() {});
+								
+							});
+						
+							// Check if the user already exists
+							scope.mongo.find({
+								collection:		'users',
+								query:			{
+									fbuid:		fbdata.id
+								}
+							}, function(response) {
+								
+								if (response.length == 0) {
+									// Create
+									scope.mongo.insert({
+										collection:		'users',
+										data:	{
+											fbuid:			fbdata.id,
+											data:			fbdata,
+											avatar:			"http://graph.facebook.com/"+fbdata.id+"/picture?redirect=true&width=140&height=140",
+											secret:			scope.Gamify.crypto.md5(scope.Gamify.uuid.v4()),
+											registered_on:	new Date(),
+											updated_on:		new Date(),
+											fbfriends:		friendIds,
+											origin:			'user'
+										}
+									}, function(err, response) {
+										// return
+										callback(response[0]);
+									});
+								} else {
+									// Update
+									scope.mongo.update({
+										collection:		'users',
+										query:			{
+											fbuid:		fbdata.id
+										},
+										data:	{
+											$set:	{
+												data:			fbdata,
+												avatar:			"http://graph.facebook.com/"+fbdata.id+"/picture?redirect=true&width=140&height=140",
+												updated_on:		new Date(),
+												fbfriends:		friendIds
+											}
+										}
+									}, function(err, response) {
+										// find and return
+										scope.mongo.find({
+											collection:		'users',
+											query:			{
+												fbuid:		fbdata.id
+											}
+										}, function(response) {
+											callback(response[0]);
+										});
+									});
+								}
+							});
+							
+						});
+						
+					} else {
+						callback(Gamify.api.errorResponse("We couldn't verify your identity. Your authtoken might be expired."));
+					}
+					
+					
+				});
+				
+			}
+		},
 		findOrCreate: {
 			require:		['query','profile','type'],
 			auth:			'sys',

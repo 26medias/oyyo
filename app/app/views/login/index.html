@@ -1,7 +1,12 @@
 <div ng-controller="IndexCtrl" class="content-padded">
-	<div ng-if="!connected" class="topcoat-button full center block" ng-click="facebookLogin()">Login to Facebook</div>
-	<div ng-if="connected" class="topcoat-button full center block" ng-click="facebookGraphQuery()">Get my data</div>
-	<hr />
-	<pre>{{profile}}</pre>
-	
+	<div ng-if="loading">
+		Loading...
+	</div>
+	<div ng-if="!loading">
+		<div ng-if="failed">FAILED!</div>
+		<div class="topcoat-button full center block" ng-click="facebookLogin()">Login to Facebook</div>
+		<hr />
+		
+		<div>{{profile}}</div>
+	</div>
 </div>

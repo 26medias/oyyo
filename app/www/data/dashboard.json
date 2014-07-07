@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "First dashboard",
+    "description": "This is awesome."
+  },
+  {
+    "id": 2,
+    "name": "Second dashboard",
+    "description": "This is also okay."
+  }
+]

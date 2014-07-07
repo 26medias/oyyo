@@ -117,6 +117,30 @@ auth.prototype.init = function(Gamify, callback){
 					}
 				});
 			}
+		},
+		
+		// API Key Auth
+		app:	function(res, req, params, callback) {
+			// Are we using a system authtoken?
+			if (!params.fbuid || !params.secret) {
+				callback(false, "You need to provide a fbuid and a secret key to call this method.");
+				return false;
+			}
+			// Get the user's data
+			scope.mongo.find({
+				collection:	"users",
+				limit:		1,
+				query:		{
+					fbuid:		params.fbuid.toString(),
+					secret:		params.secret.toString()
+				}
+			}, function(response) {
+				if (response.length == 0) {
+					callback(false, "Invalid fbuid/secret pair.");
+				} else {
+					callback(response[0].fbuid);
+				}
+			});
 		}
 	};
 	

@@ -8,16 +8,16 @@ if ( typeof angular == 'undefined' ) {
 };
 
 
-var module = angular.module('TestModel', ['restangular']);
+var module = angular.module('DashboardModel', ['restangular']);
 
-module.factory('TestRestangular', function(Restangular) {
+module.factory('DashboardRestangular', function(Restangular) {
 
   return Restangular.withConfig(function(RestangularConfigurer) {
 
     RestangularConfigurer.setBaseUrl('http://localhost/data');
     RestangularConfigurer.setRequestSuffix('.json');
     RestangularConfigurer.setRestangularFields({
-      id: "test_id"
+      id: "dashboard_id"
     });
 
   });
